@@ -19,6 +19,8 @@ require('./config/passport');
 
 mongoose.connect('mongodb://localhost/news');
 
+//mongoose.connect('mongodb://localhost/news');
+
 //////////////////////////////////////////////////////////////////////////////////
 
 var routes = require('./routes/index');

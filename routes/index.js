@@ -49,26 +49,32 @@ router.put('/posts/:post/comments/:comment/upvote', auth, function(req, res, nex
 
 /////////////PRUEBA
 
-router.delete('/posts/:post/comments/:comment/delete', auth, function(req, res, next) {
-  req.comment.delete(function(err, comment){
-    if (err) { return next(err); }
+router.post('/posts/:post/delete', auth, function(req, res) {
 
-    res.json({ message: 'Successfully deleted' });
+  req.post.remove(function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: getErrorMessage(err)
+      });
+    } else {
+      res.json("{message: 'Deleted'}");
+    }
   });
 });
 
-router.delete('/posts/:post/comments/:comment/delete', auth, function(req, res) {
-  Comment.delete({
-      _id: req.params.comment._id
-  }, function(err, comment) {
-      if (err)
-          res.send(err);
+router.post('/posts/:post/comments/:comment/delete', auth, function(req, res) {
 
-      res.json({ message: 'Successfully deleted' });
+
+  req.comment.remove(function(err) {
+    if (err) {
+      return res.status(400).send({
+        message: getErrorMessage(err)
+      });
+    } else {
+      res.json("{message: 'Deleted'}");
+    }
   });
 });
-
-
 
 
 /////////////PRUEBA
@@ -104,6 +110,7 @@ router.post('/login', function(req, res, next){
     if(user){
       return res.json({token: user.generateJWT()});
     } else {
+      console.log("hooola");
       return res.status(401).json(info);
     }
   })(req, res, next);

@@ -1,5 +1,3 @@
-
-
 var app = angular.module('flapperNews', ['ui.router']);
 
 
@@ -110,16 +108,23 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
 	  });
 	};
 
-	
-
 	////////////////////////////////////////////////////prueba:
 
+	o.deletePost = function(post) {
 
-	o.deleteComment = function(post, comment) {
-	  return $http.delete('/posts/' + post._id + '/comments/'+ comment._id + '/delete', null, {
+	  return $http.post('/posts/' + post._id + '/delete', null, {
 	    headers: {Authorization: 'Bearer '+auth.getToken()}
 	  }).success(function(data){
-		comment.remove();
+	  	
+	  });
+	};
+
+	o.deleteComment = function(post, comment) {
+
+	  return $http.post('/posts/' + post._id + '/comments/'+ comment._id + '/delete', null, {
+	    headers: {Authorization: 'Bearer '+auth.getToken()}
+	  }).success(function(data){
+	  	
 	  });
 	};
 
@@ -205,6 +210,12 @@ function($scope, posts, auth){
 	  posts.upvote(post);
 	};
 
+	$scope.deletePost = function(key,post){
+
+		$scope.posts.splice(key, 1);
+		posts.deletePost(post);
+
+	};
 
 }]);
 
@@ -232,16 +243,17 @@ function($scope, posts, post, auth){
 	};
 
 	$scope.incrementUpvotes = function(comment){
-	  posts.upvoteComment(post, comment);
+	  	posts.upvoteComment(post, comment);
 	};
 
-	$scope.delete = function(comment){
-
-		posts.deleteComment(post, comment, function (success) {
-		    $scope.comments.splice( $scope.comments.indexOf(comment), 1);
-		});
+	$scope.deleteComment = function(key,comment){
+		$scope.post.comments.splice(key, 1);
+		posts.deleteComment(post, comment);
 
 	};
+
+	
+
 }]);
 
 app.controller('NavCtrl', [

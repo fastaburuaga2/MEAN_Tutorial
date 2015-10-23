@@ -13,7 +13,7 @@ CommentSchema.methods.upvote = function(cb) {
   };
 
 CommentSchema.methods.delete = function(cb) {
-  this.remove;
+  this.remove();
   this.save(cb);
   };
 
