@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var http = require('http');
+
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -17,7 +19,7 @@ require('./models/Comments');
 require('./models/Users');
 require('./config/passport');
 
-mongoose.connect('mongodb://localhost/news');
+
 
 //mongoose.connect('mongodb://localhost/news');
 
@@ -28,7 +30,10 @@ var users = require('./routes/users');
 
 var app = express();
 
+//////////HEROKU
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/news');
 
+//////////HEROKU
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
