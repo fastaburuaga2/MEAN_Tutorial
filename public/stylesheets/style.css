@@ -39,7 +39,7 @@ p {
 }
 
 .c1 {
-  width: 300px;
+  width: 2800px;
   height: 220px;
   background: url(/images/convenient.png) no-repeat;
 }
@@ -53,6 +53,12 @@ p {
   width: 280px;
   height: 220px;
   background: url(/images/friend.png) no-repeat;
+}
+
+.c4 {
+  width: 400px;
+  height: 350px;
+  border-color: #d2493b;
 }
 
 .form-group {
@@ -127,7 +133,47 @@ p {
   text-align: center;
 }
 
-.form-control {
-  
+.btn-facebook {
+  background-color: #318595;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  width: 60%;
+  margin-bottom: 10px;
+  transition: all 0.3s ease 0s;
 
 }
+.btn-facebook:hover {
+  color:white;
+  background-color: #276a77;
+
+}
+
+.btn2 {
+  width: 60%;
+}
+
+.responsive-video {
+position: relative;
+padding-bottom: 56.25%;
+padding-top: 60px; overflow: hidden;
+}
+
+
+.responsive-video iframe,
+.responsive-video object,
+.responsive-video embed {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+}
+
+
+
+
+
+
+
+

@@ -14,7 +14,7 @@
   <style> .glyphicon-thumbs-up { cursor:pointer } </style>
   
 </head>
-<body ng-app="flapperNews" ng-init="hide=false">
+<body ng-app="flapperNews">
 
 <!-- Navbar -->
 
@@ -26,7 +26,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>                        
       </button>
-      <a class="navbar-brand" href="/#/" ng-click="getHide()">Foundations</a>
+      <a class="navbar-brand" href="/#/" ng-click="getHide()">Foundations (BETA)</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
@@ -34,7 +34,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li ng-show="isLoggedIn()"><a><span class="glyphicon glyphicon-user"></span> {{ currentUser() }}</a></li>
-        <li ng-hide="isLoggedIn()"><a href="/#/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+        <li ng-hide="isLoggedIn()"><a href="/#/register" ng-click="setHide()"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
         <li ng-hide="isLoggedIn()"><a href="/#/login" ng-click="setHide()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
         <li ng-show="isLoggedIn()"><a href="" ng-click="logOut() "><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
       </ul>
@@ -78,7 +78,7 @@
     <div class="jumbotron" ng-init="c =' '" ng-show="isLoggedIn()">
       <div class="row text-center" style="margin-bottom:30px;">
         <div class="editContent">
-              <h2>Found your Foundation</h2>
+              <h2>Find your Foundation</h2>
         </div>
       </div><!--end of row-->
       
@@ -193,7 +193,7 @@
   <hr>
 </script>
 
-<script type="text/ng-template" id="/posts.html" src="/javascripts/posts.js">
+<script type="text/ng-template" id="/posts.html">
 
 <div class="page-header">
     <h3>
@@ -252,7 +252,8 @@
         <input type="text"
         class="form-control"
         placeholder="Username"
-        ng-model="user.username"></input>
+        ng-model="user.username" 
+        autofocus="autofocus"></input>
       </div>
       <div class="form-group formx">
         <input type="text"
@@ -275,7 +276,19 @@
       <div class="formy">
         <button type="submit" class="btn btn-default" ng-click="getHide()">Register</button>
       </div>
+      <hr>
+      <div class="formy">
+        <div class="btn btn-facebook" ><span class="glyphicon glyphicon-log-in"></span> &nbsp;&nbsp;&nbsp;&nbsp; Log In with Facebook</div>
+      </div>
       </form>
+      </div>
+      <div class="col-md-6">
+          <h3 class= "formy">How it Works</h3>
+          <div class= "formy">
+            <iframe width="420" height="345"
+              src="http://www.youtube.com/embed/415iM8rr1X8">
+            </iframe>
+          </div>
       </div>
   </div>
 
@@ -291,22 +304,35 @@
 
   <form ng-submit="logIn()"
     style="margin-top:30px;">
-    <h3>Log In</h3>
+    <h3 class= "formy">Log In</h3>
 
-    <div class="form-group">
+    <div class="form-group formx">
       <input type="text"
       class="form-control"
       placeholder="Username"
-      ng-model="user.username"></input>
+      ng-model="user.username" 
+      ></input>
     </div>
-    <div class="form-group">
+    <div class="form-group formx">
       <input type="password"
       class="form-control"
       placeholder="Password"
       ng-model="user.password"></input>
     </div>
-    <button type="submit" class="btn btn-default" ng-click="getHide()">Log In</button>
+
+    <div class="formy">
+    <button type="submit" class="btn btn2 btn-default" ng-click="getHide()">Log In</button>
+    <div class="checkbox">
+    <label><input type="checkbox" value="">Remember me · </label>
+    <a>Forgot your password?</a>
+    </div>
+
+    <hr>
+    <div class="btn btn-facebook" ><span class="glyphicon glyphicon-log-in"></span> &nbsp;&nbsp;&nbsp;&nbsp; Log In with Facebook</div>
+    </div>
+
   </form>
+
   </script>
 
 
