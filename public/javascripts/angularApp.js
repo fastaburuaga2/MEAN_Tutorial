@@ -1,5 +1,4 @@
-var app = angular.module('flapperNews', ['ui.router']);
-
+var app = angular.module('flapperNews', ['ui.router','ui.sortable']);
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -135,6 +134,7 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
 }]);
 
 
+
 app.factory('auth', ['$http', '$window', function($http, $window){
    	var auth = {};
 
@@ -214,7 +214,12 @@ function($scope, posts, auth){
 
 		$scope.posts.splice(key, 1);
 		posts.deletePost(post);
-
+	};
+	$scope.setHide = function(){
+  		$('#jt3').hide();
+	};
+	$scope.getHide = function(){
+		$('#jt3').show();
 	};
 
 }]);
@@ -263,8 +268,14 @@ function($scope, auth){
   $scope.isLoggedIn = auth.isLoggedIn;
   $scope.currentUser = auth.currentUser;
   $scope.logOut = auth.logOut;
-}]);
+  $scope.setHide = function(){
+  	$('#jt3').hide();
+  };
+  $scope.getHide = function(){
+  	$('#jt3').show();
+  };
 
+}]);
 
 app.controller('AuthCtrl', [
 '$scope',
@@ -288,12 +299,17 @@ function($scope, $state, auth){
       $state.go('home');
     });
   };
+
+  $scope.setHide = function(){
+  	$('#jt3').hide();
+  };
+  $scope.getHide = function(){
+  	$('#jt3').show();
+  };
 }]);
 
 
-
-
-
+//////////////////////////OTROS
 
 
 
