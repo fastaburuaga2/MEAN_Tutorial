@@ -1,5 +1,4 @@
 body {
-    background-image: url("/images/bg3.png");
     max-width: 100%;
     overflow-x: hidden;
 
@@ -21,8 +20,13 @@ p {
   color: #318595;
 }
 
+
+.logo {
+  color: #d0452d;
+}
+
 .jumbotron {
-	background:rgba(255,255,255,0.8);
+	background:rgba(255,255,255,0.7);
 }
 
 .category {
@@ -67,37 +71,44 @@ p {
 	max-width: 70%;
 }
 .navbar-default {
-  background-color: #f25c4c;
+  background-color: #ffffff;
   border-color: #d2493b;
+  border-bottom: 1px solid lightgray;
+
 }
 .navbar-default .navbar-brand {
-  color: #ecf0f1;
+  color: #318595;
+  font-weight: bold;
+}
+.navbar-default .navbar-brand .navbar-right {
+  color: #318595;
+  font-weight: bold;
 }
 .navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
-  color: #ffbbbc;
+  color: #256470;
 }
 .navbar-default .navbar-text {
   color: #ecf0f1;
 }
 .navbar-default .navbar-nav > li > a {
-  color: #ecf0f1;
+  color: #318595;
 }
 .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-  color: #ffbbbc;
+  color: #256470;
 }
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
-  color: #ffbbbc;
-  background-color: #d2493b;
+  color: #256470;
+  background-color: #256470;
 }
 .navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
-  color: #ffbbbc;
-  background-color: #d2493b;
+  color: #256470;
+  background-color: #256470;
 }
 .navbar-default .navbar-toggle {
-  border-color: #d2493b;
+  border-color: #256470;
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
-  background-color: #d2493b;
+  background-color: #256470;
 }
 .navbar-default .navbar-toggle .icon-bar {
   background-color: #ecf0f1;
@@ -155,6 +166,140 @@ p {
   width: 60%;
 }
 
+.section {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+/*======= Home =======*/
+
+.bg-img {
+  background: url("/images/bg3.png");
+  position: relative;
+}
+
+.home-wrapper {
+  color: #ffffff;
+  padding: 150px 0px 150px 0px;
+}
+.home-wrapper h4 {
+  line-height: 24px;
+  color: #eee;
+  margin-bottom: 50px;
+  font-size: 16px;
+}
+.main-slider .flex-control-nav {
+    width: 100%;
+    position: absolute;
+    bottom: 30px;
+    text-align: center;
+}
+
+.main-slider .flex-control-paging li a {
+  width: 11px;
+  height: 11px;
+  display: block;
+  background: rgba(255,255,255,0.8); 
+  cursor: pointer;
+  text-indent: -9999px;
+  box-shadow: none; 
+}
+.main-slider .flex-control-paging li a:hover { 
+  background: #333;
+  background: rgba(255,255,255,0.9);
+}
+.main-slider .flex-control-paging li a.flex-active { 
+  background: #318595;
+}
+
+
+/*======= Buttons ======= */
+.btn {
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.btn.btn-rnd {
+  padding: 11px 40px;
+  border-radius: 30px;
+}
+.btn-custom:focus {
+  background: #318595;
+  border: 1px solid #318595;
+  outline: none;
+}
+.btn-custom:hover {
+  background: #318595 !important;
+  border: 1px solid #318595;
+}
+.btn-custom {
+  background: #318595 !important;
+  color: #fff !important;
+  border: 1px solid #318595;
+}
+
+/*======= Services =======*/
+.services-box {
+  margin: 40px 0px;
+}
+.services-box .icon-box {
+    min-height: 240px;
+}
+.services-box .icon-box img{
+    max-width: 250px;
+    margin: 0px auto;
+}
+
+.facts {
+  margin-bottom: 20px;
+}
+
+/*======= Categories =======*/
+
+.bg-gray {
+  background-color: #eef2f5;
+  border-bottom: 1px solid #e9e9e9;
+  border-top: 1px solid #e9e9e9;
+  max-height: 400px;
+}
+
+/*======= Footer CTA =======*/
+.footer-cta {
+  color: #ffffff;
+}
+.footer-cta .btn {
+  margin-top: 30px;
+}
+
+
+/*======= Footer =======*/
+.footer h5{
+  color: #333;
+  font-size: 15px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.footer a{
+  color: #97a0af;
+}
+.footer a:hover {
+  color: #318595;
+}
+.footer ul li {
+  margin: 5px 0px;
+}
+.footer-alt {
+  border-top: 1px solid rgba(151, 160, 175, 0.2);
+  margin-top: 30px;
+  padding-top: 20px;
+}
+.footer-alt .logo {
+  color: #97a0af !important;
+  margin-bottom: 0px;
+}
+.footer-alt .logo i {
+  margin-right: 5px;
+}
 
 
 

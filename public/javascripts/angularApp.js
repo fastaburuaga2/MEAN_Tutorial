@@ -215,11 +215,15 @@ function($scope, posts, auth){
 		$scope.posts.splice(key, 1);
 		posts.deletePost(post);
 	};
-	$scope.setHide = function(){
+	$scope.hide = function(){
   		$('#jt3').hide();
+  		$('#bg').hide();
+  		$(window).scrollTop(0);
 	};
-	$scope.getHide = function(){
+	$scope.show = function(){
 		$('#jt3').show();
+		$('#bg').show();
+		$(window).scrollTop(0);
 	};
 
 }]);
@@ -268,11 +272,16 @@ function($scope, auth){
   $scope.isLoggedIn = auth.isLoggedIn;
   $scope.currentUser = auth.currentUser;
   $scope.logOut = auth.logOut;
-  $scope.setHide = function(){
+  $scope.hide = function(){
+
   	$('#jt3').hide();
+  	$('#bg').hide();
+  	$(window).scrollTop(0);
   };
-  $scope.getHide = function(){
+  $scope.show = function(){
   	$('#jt3').show();
+	$('#bg').show();
+	$(window).scrollTop(0);
   };
 
 }]);
@@ -288,7 +297,10 @@ function($scope, $state, auth){
     auth.register($scope.user).error(function(error){
       $scope.error = error;
     }).then(function(){
-      $state.go('home');
+    	$('#jt3').show();
+  		$('#bg').show();
+  		$(window).scrollTop(0);
+      	$state.go('home');
     });
   };
 
@@ -296,16 +308,14 @@ function($scope, $state, auth){
     auth.logIn($scope.user).error(function(error){
       $scope.error = error;
     }).then(function(){
-      $state.go('home');
+    	$('#jt3').show();
+  		$('#bg').show();
+  		$(window).scrollTop(0);
+      	$state.go('home');
+
     });
   };
 
-  $scope.setHide = function(){
-  	$('#jt3').hide();
-  };
-  $scope.getHide = function(){
-  	$('#jt3').show();
-  };
 }]);
 
 
