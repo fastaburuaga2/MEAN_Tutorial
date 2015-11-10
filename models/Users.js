@@ -1,14 +1,40 @@
 var mongoose = require('mongoose');
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
+var bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
   username: {type: String, lowercase: true, unique: true},
   email: {type: String, lowercase: true, unique: true},
+  displayName: String,
+  picture: String,
+  facebook: String,
   hash: String,
   salt: String
 });
 
+/////////////////////FACEBOOK
+
+userSchema.pre('save', function(next) {
+  var user = this;
+  if (!user.isModified('password')) {
+    return next();
+  }
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(user.password, salt, function(err, hash) {
+      user.password = hash;
+      next();
+    });
+  });
+});
+
+userSchema.methods.comparePassword = function(password, done) {
+  bcrypt.compare(password, this.password, function(err, isMatch) {
+    done(err, isMatch);
+  });
+};
+
+////////////////////
 
 UserSchema.methods.setPassword = function(password){
   this.salt = crypto.randomBytes(16).toString('hex');

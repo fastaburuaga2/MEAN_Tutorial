@@ -35,6 +35,14 @@ mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/news');
 
 //////////HEROKU
 
+////////////FACEBOOK
+app.use(cors());
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+////////////FACEBOOK
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

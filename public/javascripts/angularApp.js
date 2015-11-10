@@ -1,4 +1,4 @@
-var app = angular.module('flapperNews', ['ui.router','ui.sortable']);
+var app = angular.module('flapperNews', ['ui.router','ui.sortable','satellizer']);
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -6,13 +6,24 @@ var app = angular.module('flapperNews', ['ui.router','ui.sortable']);
 app.config([
 '$stateProvider',
 '$urlRouterProvider',
-function($stateProvider, $urlRouterProvider) {
+'$authProvider',
+function($stateProvider, $urlRouterProvider,$authProvider) {
+
+	$authProvider.facebook({
+      clientId: '524876354354514'
+    });
 
 	$stateProvider
 	.state('home', {
 		url: '/home',
 		templateUrl: '/home.html',
 		controller: 'MainCtrl',
+		onEnter: [ function(){
+				$('#jt3').show();
+		  		$('#home').show();
+		  		$(window).scrollTop(0);
+			}
+		],
 		resolve: {
 			postPromise: ['posts', function(posts){
 			  return posts.getAll();
@@ -24,11 +35,20 @@ function($stateProvider, $urlRouterProvider) {
 	  url: '/posts/{id}',
 	  templateUrl: '/posts.html',
 	  controller: 'PostsCtrl',
-	  resolve: {
-	    post: ['$stateParams', 'posts', function($stateParams, posts) {
-	      return posts.get($stateParams.id);
-	    }]
-	  }
+	  
+	})
+
+	.state('profile', {
+	  url: '/profile',
+	  templateUrl: '/profile.html',
+	  controller: 'MainCtrl',
+	  onEnter: [function(){
+	  	$('#jt3').hide();
+	  	$('#home').hide();
+	  	$('#categories').hide();
+  		$(window).scrollTop(0);
+	  }]
+	  
 	})
 
 	.state('login', {
@@ -36,6 +56,9 @@ function($stateProvider, $urlRouterProvider) {
 	  templateUrl: '/login.html',
 	  controller: 'AuthCtrl',
 	  onEnter: ['$state', 'auth', function($state, auth){
+	  	$('#jt3').hide();
+  		$('#home').hide();
+  		$(window).scrollTop(0);
 	    if(auth.isLoggedIn()){
 	      $state.go('home');
 	    }
@@ -47,6 +70,9 @@ function($stateProvider, $urlRouterProvider) {
 	  templateUrl: '/register.html',
 	  controller: 'AuthCtrl',
 	  onEnter: ['$state', 'auth', function($state, auth){
+	  	$('#jt3').hide();
+  		$('#home').hide();
+  		$(window).scrollTop(0);
 	    if(auth.isLoggedIn()){
 	      $state.go('home');
 	    }
@@ -137,6 +163,7 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
 
 app.factory('auth', ['$http', '$window', function($http, $window){
    	var auth = {};
+   	var fillingForm = false;
 
    	auth.saveToken = function (token){
 	  $window.localStorage['flapper-news-token'] = token;
@@ -158,6 +185,14 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	  }
 	};
 
+	auth.setFillingForm =function(){
+		fillingForm = true;
+	}
+
+	auth.isFillingForm =function(){
+		return fillingForm;
+	}
+
 	auth.currentUser = function(){
 	  if(auth.isLoggedIn()){
 	    var token = auth.getToken();
@@ -169,12 +204,14 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 
 	auth.register = function(user){
 	  return $http.post('/register', user).success(function(data){
+	  	fillingForm = false;
 	    auth.saveToken(data.token);
 	  });
 	};
 
 	auth.logIn = function(user){
 	  return $http.post('/login', user).success(function(data){
+	  	fillingForm = false;
 	    auth.saveToken(data.token);
 	  });
 	};
@@ -183,144 +220,41 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	  $window.localStorage.removeItem('flapper-news-token');
 	};
 
+	////////////////
+
+	auth.register = function(user){
+	  return $http.post('/auth/facebook', user).success(function(data){
+	  	fillingForm = false;
+	  });
+	};
+
 	return auth;
 }])
 
 
-//////////////////////////////////////////////////////////////////////////////////
-
-app.controller('MainCtrl', [
-'$scope', 'posts', 'auth' ,
-function($scope, posts, auth){
-
-	$scope.posts = posts.posts;
-	$scope.isLoggedIn = auth.isLoggedIn;
-
-	$scope.addPost = function(){
-	  if(!$scope.title || $scope.title === '') { return; }
-	  posts.create({
-	    title: $scope.title,
-	    link: $scope.link,
-	  });
-	  $scope.title = '';
-	  $scope.link = '';
-	};
-
-	$scope.incrementUpvotes = function(post) {
-	  posts.upvote(post);
-	};
-
-	$scope.deletePost = function(key,post){
-
-		$scope.posts.splice(key, 1);
-		posts.deletePost(post);
-	};
-	$scope.hide = function(){
-  		$('#jt3').hide();
-  		$('#bg').hide();
-  		$(window).scrollTop(0);
-	};
-	$scope.show = function(){
-		$('#jt3').show();
-		$('#bg').show();
-		$(window).scrollTop(0);
-	};
-
-}]);
-
-//////////////////////////////////////////////////////////////////////////////////
-
-app.controller('PostsCtrl', [
-'$scope',
-'posts',
-'post' ,
-'auth' ,
-function($scope, posts, post, auth){
-
-	$scope.post = post;
-	$scope.isLoggedIn = auth.isLoggedIn;
-
-	$scope.addComment = function(){
-		if($scope.body === '') { return; }
-		posts.addComment(post._id, {
-			body: $scope.body,
-			author: 'user',
-		}).success(function(comment) {
-			$scope.post.comments.push(comment);
-		});
-		$scope.body = '';
-	};
-
-	$scope.incrementUpvotes = function(comment){
-	  	posts.upvoteComment(post, comment);
-	};
-
-	$scope.deleteComment = function(key,comment){
-		$scope.post.comments.splice(key, 1);
-		posts.deleteComment(post, comment);
-
-	};
-
-	
-
-}]);
-
-app.controller('NavCtrl', [
-'$scope',
-'auth',
-function($scope, auth){
-  $scope.isLoggedIn = auth.isLoggedIn;
-  $scope.currentUser = auth.currentUser;
-  $scope.logOut = auth.logOut;
-  $scope.hide = function(){
-
-  	$('#jt3').hide();
-  	$('#bg').hide();
-  	$(window).scrollTop(0);
-  };
-  $scope.show = function(){
-  	$('#jt3').show();
-	$('#bg').show();
-	$(window).scrollTop(0);
-  };
-
-}]);
-
-app.controller('AuthCtrl', [
-'$scope',
-'$state',
-'auth',
-function($scope, $state, auth){
-  $scope.user = {};
-
-  $scope.register = function(){
-    auth.register($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-    	$('#jt3').show();
-  		$('#bg').show();
-  		$(window).scrollTop(0);
-      	$state.go('home');
-    });
-  };
-
-  $scope.logIn = function(){
-    auth.logIn($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-    	$('#jt3').show();
-  		$('#bg').show();
-  		$(window).scrollTop(0);
-      	$state.go('home');
-
-    });
-  };
-
-}]);
+//////////////////////////////////////////////////////////////////////////////////FACEBOOK
 
 
-//////////////////////////OTROS
+function ensureAuthenticated(req, res, next) {
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
+  }
+  var token = req.headers.authorization.split(' ')[1];
 
+  var payload = null;
+  try {
+    payload = jwt.decode(token, config.TOKEN_SECRET);
+  }
+  catch (err) {
+    return res.status(401).send({ message: err.message });
+  }
+
+  if (payload.exp <= moment().unix()) {
+    return res.status(401).send({ message: 'Token has expired' });
+  }
+  req.user = payload.sub;
+  next();
+}
 
 
 

@@ -167,6 +167,7 @@ p {
 
 .btn2 {
   width: 60%;
+  background-color: #eef2f5;
 }
 
 .section {
@@ -304,6 +305,20 @@ p {
   margin-right: 5px;
 }
 
+/*======= Profile =======*/
+
+.profile {
+  margin: 20px;
+}
+.credit {
+  color: #318595;
+}
+.title2 {
+  margin: 20px;
+}
+.thumbnail {
+  margin: 20px;
+}
 
 
 
