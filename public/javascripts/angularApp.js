@@ -1,4 +1,4 @@
-var app = angular.module('flapperNews', ['ui.router','ui.sortable','satellizer']);
+var app = angular.module('flapperNews', ['ui.router','ui.sortable','satellizer','toastr']);
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -10,13 +10,13 @@ app.config([
 function($stateProvider, $urlRouterProvider,$authProvider) {
 
 	$authProvider.facebook({
-      clientId: '524876354354514'
+      clientId: '1042472282451884'
     });
 
 	$stateProvider
 	.state('home', {
 		url: '/home',
-		templateUrl: '/home.html',
+		templateUrl: '/partials/home.html',
 		controller: 'MainCtrl',
 		onEnter: [ function(){
 				$('#jt3').show();
@@ -33,7 +33,7 @@ function($stateProvider, $urlRouterProvider,$authProvider) {
 
 	.state('posts', {
 	  url: '/posts/{id}',
-	  templateUrl: '/posts.html',
+	  templateUrl: '/partials/posts.html',
 	  controller: 'PostsCtrl',
 	  
 	})
@@ -41,52 +41,75 @@ function($stateProvider, $urlRouterProvider,$authProvider) {
 	.state('profile', {
 	  url: '/profile',
 	  templateUrl: '/profile.html',
-	  controller: 'MainCtrl',
+	  controller: 'ProfileCtrl',
 	  onEnter: [function(){
 	  	$('#jt3').hide();
 	  	$('#home').hide();
 	  	$('#categories').hide();
   		$(window).scrollTop(0);
-	  }]
+	  }],
+	  resolve: {
+          loginRequired: loginRequired
+      }
 	  
 	})
 
 	.state('login', {
 	  url: '/login',
 	  templateUrl: '/login.html',
-	  controller: 'AuthCtrl',
-	  onEnter: ['$state', 'auth', function($state, auth){
+	  controller: 'LoginCtrl',
+	  onEnter: ['$state', function($state){
 	  	$('#jt3').hide();
   		$('#home').hide();
   		$(window).scrollTop(0);
-	    if(auth.isLoggedIn()){
+	    /*if(auth.isLoggedIn()){
 	      $state.go('home');
-	    }
+	    }*/
 	  }]
 	})
 
 	.state('register', {
 	  url: '/register',
 	  templateUrl: '/register.html',
-	  controller: 'AuthCtrl',
-	  onEnter: ['$state', 'auth', function($state, auth){
+	  controller: 'SignupCtrl',
+	  onEnter: ['$state', function($state){
 	  	$('#jt3').hide();
   		$('#home').hide();
   		$(window).scrollTop(0);
-	    if(auth.isLoggedIn()){
+	    /*if(auth.isLoggedIn()){
 	      $state.go('home');
-	    }
+	    }*/
 	  }]
 	});
 
 
 	$urlRouterProvider.otherwise('home');
 
+	function skipIfLoggedIn($q, $auth) {
+      var deferred = $q.defer();
+      if ($auth.isAuthenticated()) {
+        deferred.reject();
+      } else {
+        deferred.resolve();
+      }
+      return deferred.promise;
+    }
+
+    function loginRequired($q, $location, $auth) {
+      var deferred = $q.defer();
+      if ($auth.isAuthenticated()) {
+        deferred.resolve();
+      } else {
+        $location.path('/login');
+      }
+      return deferred.promise;
+    }
+
 }]);
 
 //////////////////////////////////////////////////////////////////////////////////
 
-app.factory('posts',  ['$http', 'auth', function($http, auth){
+app.factory('posts',  ['$http', function($http){
 	var o = {
     	posts: []
 	};
@@ -104,31 +127,23 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
   	};
 
 	o.create = function(post) {
-	  return $http.post('/posts', post, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  }).success(function(data){
+	  return $http.post('/posts', post).success(function(data){
 	    o.posts.push(data);
 	  });
 	};
 
 	o.upvote = function(post) {
-	  return $http.put('/posts/' + post._id + '/upvote', null, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  }).success(function(data){
+	  return $http.put('/posts/' + post._id + '/upvote', null).success(function(data){
 	    post.upvotes += 1;
 	  });
 	};
 
 	o.addComment = function(id, comment) {
-	  return $http.post('/posts/' + id + '/comments', comment, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  });
+	  return $http.post('/posts/' + id + '/comments', comment);
 	};
 
 	o.upvoteComment = function(post, comment) {
-	  return $http.put('/posts/' + post._id + '/comments/'+ comment._id + '/upvote', null, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  }).success(function(data){
+	  return $http.put('/posts/' + post._id + '/comments/'+ comment._id + '/upvote', null).success(function(data){
 	    comment.upvotes += 1;
 	  });
 	};
@@ -137,18 +152,14 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
 
 	o.deletePost = function(post) {
 
-	  return $http.post('/posts/' + post._id + '/delete', null, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  }).success(function(data){
+	  return $http.post('/posts/' + post._id + '/delete', null).success(function(data){
 	  	
 	  });
 	};
 
 	o.deleteComment = function(post, comment) {
 
-	  return $http.post('/posts/' + post._id + '/comments/'+ comment._id + '/delete', null, {
-	    headers: {Authorization: 'Bearer '+auth.getToken()}
-	  }).success(function(data){
+	  return $http.post('/posts/' + post._id + '/comments/'+ comment._id + '/delete', null).success(function(data){
 	  	
 	  });
 	};
@@ -159,8 +170,19 @@ app.factory('posts',  ['$http', 'auth', function($http, auth){
 	return o;
 }]);
 
+app.factory('Account', function($http) {
+	return {
+	  getProfile: function() {
+	    return $http.get('/api/me');
+	  },
+	  updateProfile: function(profileData) {
+	    return $http.put('/api/me', profileData);
+	  }
+	};
+});
 
 
+/*
 app.factory('auth', ['$http', '$window', function($http, $window){
    	var auth = {};
    	var fillingForm = false;
@@ -197,7 +219,6 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	  if(auth.isLoggedIn()){
 	    var token = auth.getToken();
 	    var payload = JSON.parse($window.atob(token.split('.')[1]));
-
 	    return payload.username;
 	  }
 	};
@@ -220,41 +241,14 @@ app.factory('auth', ['$http', '$window', function($http, $window){
 	  $window.localStorage.removeItem('flapper-news-token');
 	};
 
-	////////////////
-
-	auth.register = function(user){
-	  return $http.post('/auth/facebook', user).success(function(data){
-	  	fillingForm = false;
-	  });
-	};
-
 	return auth;
 }])
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////////FACEBOOK
 
 
-function ensureAuthenticated(req, res, next) {
-  if (!req.headers.authorization) {
-    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
-  }
-  var token = req.headers.authorization.split(' ')[1];
 
-  var payload = null;
-  try {
-    payload = jwt.decode(token, config.TOKEN_SECRET);
-  }
-  catch (err) {
-    return res.status(401).send({ message: err.message });
-  }
-
-  if (payload.exp <= moment().unix()) {
-    return res.status(401).send({ message: 'Token has expired' });
-  }
-  req.user = payload.sub;
-  next();
-}
 
 
 

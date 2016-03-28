@@ -1,0 +1,36 @@
+<div class="page-header">
+    <h3>
+      <a ng-show="post.link" href="{{post.link}}">
+        {{post.title}}
+      </a>
+      <span ng-hide="post.link">
+        {{post.title}}
+      </span>
+    </h3>
+  </div>
+
+  <div ng-repeat="comment in post.comments "> 
+    <span class="glyphicon glyphicon-thumbs-up" ng-click="incrementUpvotes(comment)"></span>
+    {{comment.upvotes}} - by {{comment.author}}
+    <span style="font-size:20px; margin-left:10px;">
+      {{comment.body}}
+    </span>
+    <span class= "glyphicon glyphicon-trash" ng-click= "deleteComment($index,comment)"></span>
+  </div>
+
+  <form ng-submit="addComment()" ng-show="isLoggedIn()" style="margin-top:30px;">
+
+    <div ng-hide="isLoggedIn()">
+      <p>You need to <a href="/#/login" ng-click="hide()">Log In</a> or <a href="/#/register" ng-click="hide()">Sign Up</a> before you can comment.</p>
+    </div>
+    <p style="font-size:15px; font-weight: bold;">Add a new comment</p>
+
+    <div class="form-group">
+      <input type="text"
+      class="form-control"
+      placeholder="Comment"
+      ng-model="body"></input>
+    </div>
+    <button type="submit" class="btn btn-default">Post</button>
+  </form>
+  <a href="/#/home" ng-click="show()">Back</a>

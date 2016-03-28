@@ -1,15 +1,46 @@
 var express = require('express');
-var passport = require('passport');
-var jwt = require('express-jwt');
 var router = express.Router();
 var mongoose = require('mongoose');
 var Post = mongoose.model('Post');
 var Comment = mongoose.model('Comment');
 var User = mongoose.model('User');
-var auth = jwt({secret: 'SECRET', userProperty: 'payload'});
+var jwt = require('jwt-simple');
+var moment = require('moment');
 var request = require('request');
-var config = require('./config');
 
+//////////////////////////
+
+function ensureAuthenticated(req, res, next) {
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
+  }
+  var token = req.headers.authorization.split(' ')[1];
+
+  var payload = null;
+  try {
+    payload = jwt.decode(token, 'JWT Token Secret');
+  }
+  catch (err) {
+    return res.status(401).send({ message: err.message });
+  }
+
+  if (payload.exp <= moment().unix()) {
+    return res.status(401).send({ message: 'Token has expired' });
+  }
+  req.user = payload.sub;
+  next();
+}
+
+function createJWT(user) {
+  var payload = {
+    sub: user._id,
+    iat: moment().unix(),
+    exp: moment().add(14, 'days').unix()
+  };
+  return jwt.encode(payload, 'JWT Token Secret');
+}
+
+//////////////////////////
 
 router.get('/posts', function(req, res, next) {
   Post.find(function(err, posts){
@@ -20,7 +51,7 @@ router.get('/posts', function(req, res, next) {
 });
 
 
-router.post('/posts', auth, function(req, res, next) {
+router.post('/posts', function(req, res, next) {
   var post = new Post(req.body);
   post.author = req.payload.username;
 
@@ -32,7 +63,7 @@ router.post('/posts', auth, function(req, res, next) {
 });
 
 
-router.put('/posts/:post/upvote', auth, function(req, res, next) {
+router.put('/posts/:post/upvote', function(req, res, next) {
   req.post.upvote(function(err, post){
     if (err) { return next(err); }
 
@@ -41,7 +72,7 @@ router.put('/posts/:post/upvote', auth, function(req, res, next) {
 });
 
 
-router.put('/posts/:post/comments/:comment/upvote', auth, function(req, res, next) {
+router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
   req.comment.upvote(function(err, comment){
     if (err) { return next(err); }
 
@@ -51,7 +82,7 @@ router.put('/posts/:post/comments/:comment/upvote', auth, function(req, res, nex
 
 /////////////PRUEBA
 
-router.post('/posts/:post/delete', auth, function(req, res) {
+router.post('/posts/:post/delete', function(req, res) {
 
   req.post.remove(function(err) {
     if (err) {
@@ -64,7 +95,7 @@ router.post('/posts/:post/delete', auth, function(req, res) {
   });
 });
 
-router.post('/posts/:post/comments/:comment/delete', auth, function(req, res) {
+router.post('/posts/:post/comments/:comment/delete', function(req, res) {
 
 
   req.comment.remove(function(err) {
@@ -76,29 +107,6 @@ router.post('/posts/:post/comments/:comment/delete', auth, function(req, res) {
       res.json("{message: 'Deleted'}");
     }
   });
-});
-
-
-/////////////PRUEBA
-
-
-
-
-
-router.post('/login', function(req, res, next){
-  if(!req.body.username || !req.body.password){
-    return res.status(400).json({message: 'Please fill out all fields'});
-  }
-
-  passport.authenticate('local', function(err, user, info){
-    if(err){ return next(err); }
-
-    if(user){
-      return res.json({token: user.generateJWT()});
-    } else {
-      return res.status(401).json(info);
-    }
-  })(req, res, next);
 });
 
 
@@ -139,7 +147,7 @@ router.get('/posts/:post', function(req, res, next) {
 });
 
 
-router.post('/posts/:post/comments', auth, function(req, res, next) {
+router.post('/posts/:post/comments', function(req, res, next) {
   var comment = new Comment(req.body);
   comment.post = req.post;
   comment.author = req.payload.username;
@@ -156,10 +164,6 @@ router.post('/posts/:post/comments', auth, function(req, res, next) {
   });
 });
 
-
-
-//////////////////
-
 router.get('/users', function(req, res, next) {
   User.find(function(err, users){
     if(err){ return next(err); }
@@ -168,21 +172,82 @@ router.get('/users', function(req, res, next) {
   });
 });
 
-router.post('/register', function(req, res, next){
-  if(!req.body.username || !req.body.password || !req.body.email){
-    return res.status(400).json({message: 'Please fill out all fields'});
-  }
+router.get('/users/deleteAll', function(req, res, next) {
+  User.remove( function(err) {
+    console.log('collection dropped');
+  });
+});
 
-  var user = new User();
+/////////////PRUEBA
 
-  user.username = req.body.username;
-  user.email = req.body.email; 
-  user.setPassword(req.body.password);
+/*
+ |--------------------------------------------------------------------------
+ | GET /api/me
+ |--------------------------------------------------------------------------
+ */
+router.get('/api/me', ensureAuthenticated, function(req, res) {
+  User.findById(req.user, function(err, user) {
+    res.send(user);
+  });
+});
 
-  user.save(function (err){
-    if(err){ return next(err); }
+/*
+ |--------------------------------------------------------------------------
+ | PUT /api/me
+ |--------------------------------------------------------------------------
+ */
+router.put('/api/me', ensureAuthenticated, function(req, res) {
+  User.findById(req.user, function(err, user) {
+    if (!user) {
+      return res.status(400).send({ message: 'User not found' });
+    }
+    user.username = req.body.username || user.username;
+    user.email = req.body.email || user.email;
+    user.save(function(err) {
+      res.status(200).end();
+    });
+  });
+});
 
-    return res.json({token: user.generateJWT()})
+
+/*
+ |--------------------------------------------------------------------------
+ | Log in with Email
+ |--------------------------------------------------------------------------
+ */
+router.post('/auth/login', function(req, res) {
+  User.findOne({ email: req.body.email }, 'password', function(err, user) {
+    if (!user) {
+      return res.status(401).send({ message: 'Invalid email and/or password' });
+    }
+    user.comparePassword(req.body.password, function(err, isMatch) {
+      if (!isMatch) {
+        return res.status(401).send({ message: 'Invalid email and/or password' });
+      }
+      res.send({ token: createJWT(user) });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | Create Email and Password Account
+ |--------------------------------------------------------------------------
+ */
+ router.post('/auth/signup', function(req, res) {
+
+  User.findOne({ email: req.body.email }, function(err, existingUser) {
+    if (existingUser) {
+      return res.status(409).send({ message: 'Email is already taken' });
+    }
+    var user = new User({
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password
+    });
+    user.save(function() {
+      res.send({ token: createJWT(user) });
+    });
   });
 });
 
@@ -192,37 +257,16 @@ router.post('/register', function(req, res, next){
  | Login with Facebook
  |--------------------------------------------------------------------------
  */
-
-function ensureAuthenticated(req, res, next) {
-  if (!req.headers.authorization) {
-    return res.status(401).send({ message: 'Please make sure your request has an Authorization header' });
-  }
-  var token = req.headers.authorization.split(' ')[1];
-
-  var payload = null;
-  try {
-    payload = jwt.decode(token, config.TOKEN_SECRET);
-  }
-  catch (err) {
-    return res.status(401).send({ message: err.message });
-  }
-
-  if (payload.exp <= moment().unix()) {
-    return res.status(401).send({ message: 'Token has expired' });
-  }
-  req.user = payload.sub;
-  next();
-}
-
  
 router.post('/auth/facebook', function(req, res) {
+
   var fields = ['id', 'email', 'first_name', 'last_name', 'link', 'name'];
   var accessTokenUrl = 'https://graph.facebook.com/v2.5/oauth/access_token';
   var graphApiUrl = 'https://graph.facebook.com/v2.5/me?fields=' + fields.join(',');
   var params = {
     code: req.body.code,
     client_id: req.body.clientId,
-    client_secret: config.FACEBOOK_SECRET,
+    client_secret: 'c4d279e369fdfe2ebc93d5a1b5e6879a', //Esto hay que arreglarlo con config
     redirect_uri: req.body.redirectUri
   };
 
@@ -231,7 +275,6 @@ router.post('/auth/facebook', function(req, res) {
     if (response.statusCode !== 200) {
       return res.status(500).send({ message: accessToken.error.message });
     }
-
     // Step 2. Retrieve profile information about the current user.
     request.get({ url: graphApiUrl, qs: accessToken, json: true }, function(err, response, profile) {
       if (response.statusCode !== 200) {
@@ -239,21 +282,22 @@ router.post('/auth/facebook', function(req, res) {
       }
       console.log(profile);
       if (req.headers.authorization) {
+        
         User.findOne({ facebook: profile.id }, function(err, existingUser) {
           if (existingUser) {
             return res.status(409).send({ message: 'There is already a Facebook account that belongs to you' });
           }
           var token = req.headers.authorization.split(' ')[1];
-          var payload = jwt.decode(token, config.TOKEN_SECRET);
+          var payload = jwt.decode(token, 'JWT Token Secret');
           User.findById(payload.sub, function(err, user) {
             if (!user) {
               return res.status(400).send({ message: 'User not found' });
             }
             user.facebook = profile.id;
             user.picture = user.picture || 'https://graph.facebook.com/v2.3/' + profile.id + '/picture?type=large';
-            user.username = user.displayName || profile.name;
+            user.username = user.username || profile.name;
             user.save(function() {
-              var token = user.generateJWT();
+              var token = createJWT(user);
               res.send({ token: token });
             });
           });
@@ -265,14 +309,20 @@ router.post('/auth/facebook', function(req, res) {
             var token = createJWT(existingUser);
             return res.send({ token: token });
           }
-          var user = new User();
-          user.facebook = profile.id;
-          user.picture = 'https://graph.facebook.com/' + profile.id + '/picture?type=large';
-          user.username = profile.name;
-          user.save(function() {
-            var token = user.generateJWT();
-            res.send({ token: token });
+          
+
+          var user = new User({
+            email : profile.email,
+            username : profile.first_name,
+            facebook : profile.id,
+            picture : 'https://graph.facebook.com/' + profile.id + '/picture?type=large'
+            
           });
+          user.save(function() {
+            console.log("createeeed");
+            res.send({ token: createJWT(user) });
+          });
+
         });
       }
     });

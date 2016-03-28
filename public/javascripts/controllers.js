@@ -1,10 +1,10 @@
 
 app.controller('MainCtrl', [
-'$scope', 'posts', 'auth' , 
-function($scope, posts, auth){
+'$scope', 'posts', 
+function($scope, posts){
 
 	$scope.posts = posts.posts;
-	$scope.isLoggedIn = auth.isLoggedIn;
+	//$scope.isLoggedIn = auth.isLoggedIn;
 
 	$scope.addPost = function(){
 	  if(!$scope.title || $scope.title === '') { return; }
@@ -34,11 +34,10 @@ app.controller('PostsCtrl', [
 '$scope',
 'posts',
 'post' ,
-'auth' ,
-function($scope, posts, post, auth){
+function($scope, posts, post){
 
 	$scope.post = post;
-	$scope.isLoggedIn = auth.isLoggedIn;
+	//$scope.isLoggedIn = auth.isLoggedIn;
 
 	$scope.addComment = function(){
 		if($scope.body === '') { return; }
@@ -67,45 +66,121 @@ function($scope, posts, post, auth){
 
 app.controller('NavCtrl', [
 '$scope',
-'auth',
-function($scope, auth){
-  $scope.isLoggedIn = auth.isLoggedIn;
-  $scope.currentUser = auth.currentUser;
-  $scope.logOut = auth.logOut;
-
-}]);
-
-app.controller('AuthCtrl', [
-'$scope',
-'$state',
-'auth',
 '$auth',
-function($scope, $state, auth, $auth){
-  $scope.user = {};
+'Account',
+function($scope,$auth,Account){
+	$scope.getProfile = function() {
+      Account.getProfile()
+        .then(function(response) {
+          $scope.user = response.data;
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
 
+    $scope.logout = function() {
+    	$auth.logout();
+    };
 
-	$scope.authenticate = function(provider) {
-	  $auth.authenticate(provider);
+    $scope.isAuthenticated = function() {
+	  return $auth.isAuthenticated();
 	};
 
-  $scope.register = function(){
-    auth.register($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-      	$state.go('home');
-    });
-  };
-
-  $scope.logIn = function(){
-    auth.logIn($scope.user).error(function(error){
-      $scope.error = error;
-    }).then(function(){
-      	$state.go('home');
-
-    });
-  };
-
+    $scope.getProfile();
+	
 }]);
+
+app.controller('LoginCtrl', function($scope, $auth, $state, $location,Account) {
+
+    $scope.getProfile = function() {
+      Account.getProfile()
+        .then(function(response) {
+          $scope.user = response.data;
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
+
+    $scope.login = function() {
+      $auth.login($scope.user)
+        .then(function() {
+          //notificar cliente
+          $scope.getProfile();
+          $state.go('home');
+        })
+        .catch(function(error) {
+          //notificar cliente
+        });
+    };
+
+    $scope.authenticate = function(provider) {
+      $auth.authenticate(provider);
+	    $scope.getProfile();
+      $location.path('/');
+
+    };
+
+  });
+
+app.controller('SignupCtrl', function($scope, $location, $auth) {
+    $scope.signup = function() {
+
+      $auth.signup($scope.user)
+        .then(function(response) {
+          $auth.setToken(response);
+          $location.path('/');
+        })
+        .catch(function(response) {
+        	////ERROR
+        });
+    };
+  });
+
+
+app.controller('ProfileCtrl', function($scope, $auth, Account) {
+    $scope.getProfile = function() {
+      Account.getProfile()
+        .then(function(response) {
+          $scope.user = response.data;
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
+    $scope.updateProfile = function() {
+      Account.updateProfile($scope.user)
+        .then(function() {
+          //notificar cliente
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
+    $scope.link = function(provider) {
+      $auth.link(provider)
+        .then(function() {
+          //notificar cliente
+          $scope.getProfile();
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
+    $scope.unlink = function(provider) {
+      $auth.unlink(provider)
+        .then(function() {
+          //notificar cliente
+          $scope.getProfile();
+        })
+        .catch(function(response) {
+          //notificar cliente
+        });
+    };
+
+    $scope.getProfile();
+  });
 
 
 //////////////////////////OTROS

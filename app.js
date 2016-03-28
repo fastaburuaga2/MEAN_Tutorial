@@ -11,13 +11,11 @@ var http = require('http');
 //////////////////////////////////////////////////////////////////////////////////
 
 var mongoose = require('mongoose');
-var passport = require('passport');
 
 
 require('./models/Posts');
 require('./models/Comments');
 require('./models/Users');
-require('./config/passport');
 
 
 
@@ -31,12 +29,11 @@ var users = require('./routes/users');
 var app = express();
 
 //////////HEROKU
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/news');
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/news2');
 
 //////////HEROKU
 
 ////////////FACEBOOK
-app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -49,9 +46,6 @@ app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-
-app.use(passport.initialize());
-
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
